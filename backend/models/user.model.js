@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
 })
 
 userSchema.methods.generateAuthToken = function () {
-    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRY });
+    const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET, { expiresIn: process.env.AUTH_TOKEN_EXPIRY });
     return token;
 }
 
@@ -40,15 +40,15 @@ userSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 }
 
-// userSchema.pre("save" , async function(next){
-//     if(!this.isModified('password')) return next();
+userSchema.pre("save" , async function(next){
+    if(!this.isModified('password')) return next();
 
-//     this.password = await bcrypt.hash(this.password , 10)
-//     next()
-// })
+    this.password = await bcrypt.hash(this.password , 10)
+    next()
+})
 
-userSchema.statics.hashPassword = async function (password) {
-    return await bcrypt.hash(password, 10);
-}
+// userSchema.statics.hashedPassword = async function (password) {
+//     return await bcrypt.hash(password, 10);
+// }
 
 export const User = mongoose.model("user" , userSchema)
