@@ -35,3 +35,28 @@ export const createUser = async (firstname, lastname, email, password) => {
         throw error; 
     }
 };
+
+export const signIn = async (email, password) => {
+    try {
+        if ([email, password].some((field) => !field?.trim())) {
+            throw new ApiError(400, "All fields are required.");
+        }
+
+        const user = await User.findOne({ email }).select('+password');
+
+        if(!user) {
+            throw new ApiError(400, "User does not exist.")
+        } 
+
+        const isPasswordValid = await user.comparePassword(password);
+    
+        if(!isPasswordValid){
+            throw new ApiError(401 , "Invalid User Credentials.");
+        }          
+
+        return user;
+    } catch (error) {
+        // Re-throw the error to let the controller handle it
+        throw error; 
+    }
+};

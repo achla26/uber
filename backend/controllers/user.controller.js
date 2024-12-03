@@ -1,7 +1,7 @@
 import { validationResult } from "express-validator";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { createUser } from "../services/user.service.js";
+import { createUser , signIn} from "../services/user.service.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 export const registerUser = asyncHandler(async (req, res, next) => {
@@ -35,3 +35,36 @@ export const registerUser = asyncHandler(async (req, res, next) => {
             new ApiResponse(201, { user: newUser, token }, "User registered successfully.")
         );
 });
+
+export const loginUser = asyncHandler(async ( req, res) => {
+    const {email  ,password} = req.body;
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    } 
+
+    const loggedInUser = await signIn(email , password);     
+
+    const token = loggedInUser.generateAuthToken();
+
+    res.cookie('token', token);
+
+    // const options = {
+    //     httpOnly: true,
+    //     secure: true
+    // }
+    
+    return res
+    .status(200)
+    .cookie("token", token) 
+    .json(
+        new ApiResponse(
+            200, 
+            {
+                user: loggedInUser, token
+            },
+            "User logged In Successfully"
+        )
+    ) 
+})
