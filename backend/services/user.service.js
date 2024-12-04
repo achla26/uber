@@ -1,5 +1,6 @@
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
+import { blacklistTokenModel } from "../models/blacklistToken.model.js"; 
 
 export const createUser = async (firstname, lastname, email, password) => {
     try {
@@ -59,4 +60,12 @@ export const signIn = async (email, password) => {
         // Re-throw the error to let the controller handle it
         throw error; 
     }
+};
+
+export const blackListToken = async (token) => {
+    await blacklistTokenModel.findOneAndUpdate(
+        { token }, // Find token in the database
+        { token }, // Update or insert token
+        { upsert: true, new: true } // Create if it doesn't exist
+    );
 };
